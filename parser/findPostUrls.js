@@ -2,6 +2,7 @@ var $ = require('cheerio');
 var request = require('request'); 
 var fs = require('fs'); 
 var pages = [];
+var Promise = require('bluebird'); 
 
 configureParser = function(config, errCallback, onPostListReady){
 
@@ -46,28 +47,29 @@ configureParser = function(config, errCallback, onPostListReady){
 
 }
 
-module.exports = function(config, callback){
-	
-	var errCallback = function(error){
-		callback(error, null); 
-	}
+module.exports = function(config){
+	return new Promise(function(resolve, reject){
+		var errCallback = function(error){
+			reject(error);  
+		}
 
-	var onPostListReady = function(data){
-	    console.log("found blog posts: " + data.length);
+		var onPostListReady = function(data){
+		    console.log("found blog posts: " + data.length);
 
-	    if(config.saveToFile){
-	    	fs.writeFile(config.saveToFile, data.join(','), function (err) {
-		      if (err) throw err;
-		      console.log('pages list is saved to ' + config.saveToFile);
-		    });
-	    }
+		    if(config.saveToFile){
+		    	fs.writeFile(config.saveToFile, data.join(','), function (err) {
+			      if (err) throw err;
+			      console.log('pages list is saved to ' + config.saveToFile);
+			    });
+		    }
 
-	    
-	    callback(null, pages); 
-	}
+		    resolve(pages);  
+		}
 
 
-	var readPage = configureParser(config, errCallback, onPostListReady);
-	
-	readPage(config.url, config.start); 	 	 
+		var readPage = configureParser(config, errCallback, onPostListReady);
+		
+		readPage(config.url, config.start); 	 	 
+
+	}); 	
 }

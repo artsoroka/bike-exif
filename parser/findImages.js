@@ -1,14 +1,15 @@
 var $ = require('cheerio'); 
 var request = require('request'); 
 var images = []; 
+var Promise = require('bluebird'); 
 
-var parseImages = function(pages, callback){
-  if( ! pages.length ) return callback(null,images); 
+var parseImages = function(pages, resolve, reject){
+  if( ! pages.length ) return resolve(images); 
 
   var url = pages.pop(); 
 
   request(url, function (err, resp, html) {
-    if (err) return callback('could not process post page: ' + url); 
+    if (err) return reject('could not process post page: ', url); 
     
     var imageURLs = []; 
     var doc = $.load(html)
@@ -24,12 +25,17 @@ var parseImages = function(pages, callback){
     imageURLs.map(function(e){
       images.push(e); 
     })
-    parseImages(pages, callback); 
+
+    parseImages(pages, resolve, reject); 
   
   });
 
 }
 
-module.exports = function(pages, callback){
-  parseImages(pages, callback); 
+module.exports = function(pages){
+  return new Promise(function(resolve, reject){
+
+    parseImages(pages, resolve, reject); 
+
+  }); 
 }
