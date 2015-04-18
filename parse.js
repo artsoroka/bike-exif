@@ -1,5 +1,5 @@
 var Promise = require('bluebird');  
-var parser  = require('./parser/');
+var parser  = require('./parser'); 
 
 parser
 	.findPostUrls({
